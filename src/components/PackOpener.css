@@ -1,0 +1,107 @@
+.pack-opener-view {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+}
+
+.booster-pack {
+  width: 280px;
+  height: 400px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: linear-gradient(145deg, #1e293b, #0f172a);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), inset 0 0 0 2px rgba(255,255,255,0.1);
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.booster-pack::before {
+  content: '';
+  position: absolute;
+  top: -50%; left: -50%; right: -50%; bottom: -50%;
+  background: linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.1) 45%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0.1) 55%, transparent 60%);
+  transform: rotate(25deg) translateY(-100%);
+  animation: shine 6s infinite;
+}
+
+.pack-design {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 2;
+}
+
+.pack-title {
+  font-family: var(--font-magic);
+  margin-top: 1.5rem;
+  font-size: 2rem;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+}
+
+.pack-type {
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+}
+
+.hover-anim {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.hover-anim:hover {
+  transform: scale(1.05) translateY(-10px) rotate(2deg);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.6), inset 0 0 0 2px rgba(255,255,255,0.2);
+}
+
+.opening-anim {
+  animation: tearOpen 2.5s forwards ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes tearOpen {
+  0% { transform: scale(1); filter: brightness(1); }
+  20% { transform: scale(1.1) rotate(-5deg); filter: brightness(1.2); }
+  40% { transform: scale(1.1) rotate(5deg); filter: brightness(1.4); }
+  60% { transform: scale(1.15) rotate(-3deg); filter: brightness(1.6); }
+  80% { transform: scale(1.2) translateY(-20px); filter: brightness(2); opacity: 1; }
+  100% { transform: scale(1.5) translateY(50px); filter: brightness(3); opacity: 0; }
+}
+
+@keyframes shine {
+  0% { transform: rotate(25deg) translateY(-100%); }
+  20% { transform: rotate(25deg) translateY(100%); }
+  100% { transform: rotate(25deg) translateY(100%); }
+}
+
+.spark-anim {
+  animation: pulseRotate 1s infinite alternate;
+}
+
+@keyframes pulseRotate {
+  0% { transform: scale(0.8) rotate(0deg); }
+  100% { transform: scale(1.2) rotate(18deg); }
+}
+
+.status-text {
+  font-size: 1.5rem;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.pulsing {
+  animation: textPulse 1s infinite alternate;
+  color: var(--text-main);
+}
+
+@keyframes textPulse {
+  0% { opacity: 0.6; }
+  100% { opacity: 1; text-shadow: 0 0 10px var(--text-main); }
+}
