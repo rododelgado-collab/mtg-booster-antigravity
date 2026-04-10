@@ -120,6 +120,38 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
     ));
   };
 
+  const simulateStockCheck = async (cardsToRedeem) => {
+    let finalRedeemList = [];
+    let convertedValue = 0;
+    
+    for (let c of cardsToRedeem) {
+       // Simulate a 15% out of stock probability
+       if (Math.random() < 0.15) {
+          const convert = await showConfirm(
+             "Quiebre de Stock 🚨",
+             `¡Oh no! La carta "${c.name}" recién se agotó en nuestras bodegas.\n\n¿Deseas venderla en su lugar y sumar sus $${c.price.toFixed(2)} automáticamente a tu crédito?`,
+             "Aceptar Crédito",
+             "Conservarla"
+          );
+          if (convert) {
+             setCards(prev => prev.map(card => card.id === c.id ? { ...card, isSelected: false, status: 'SOLD' } : card));
+             onAddCredit(c.price);
+             convertedValue += c.price;
+          } else {
+             setCards(prev => prev.map(card => card.id === c.id ? { ...card, isSelected: false } : card));
+          }
+       } else {
+          finalRedeemList.push(c);
+       }
+    }
+    
+    if (convertedValue > 0) {
+       await showAlert("Saldo Actualizado", `Se transfirieron exitosamente $${convertedValue.toFixed(2)} a tu cuenta por las cartas sin stock.`);
+    }
+    
+    return finalRedeemList;
+  };
+
   const sellSelected = async () => {
     const selectedCards = cards.filter(c => c.isSelected && !c.status);
     if (selectedCards.length === 0) {
@@ -158,9 +190,13 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
     );
 
     if (wantsToRedeem) {
+      const validCardsToRedeem = await simulateStockCheck(selectedCards);
+      
+      if (validCardsToRedeem.length === 0) return;
+
       const useDefaultAddress = await showConfirm(
         "Dirección de Envío",
-        "¿Deseas enviar las cartas a la dirección agregada previamente?",
+        `¿Deseas enviar las ${validCardsToRedeem.length} cartas en stock a la dirección agregada previamente?`,
         "Usar Predeterminada",
         "Ingresar Nueva"
       );
@@ -168,16 +204,16 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
       if (!useDefaultAddress) {
         const newAddress = await showPrompt("Nueva Dirección", "Por favor, ingresa la nueva dirección de envío:");
         if (!newAddress || newAddress.trim() === '') {
-          await showAlert("Operación Cancelada", "Debes especificar una dirección. Se ha cancelado la operación.");
+          await showAlert("Operación Cancelada", "Debes especificar una dirección. Se ha cancelado el envío físico.");
           return;
         }
-        await showAlert("Éxito", `Las cartas serán enviadas a: ${newAddress}`);
+        await showAlert("Éxito", `Las cartas físicas serán enviadas a: ${newAddress}`);
       } else {
-        await showAlert("Éxito", "Las cartas serán enviadas a tu dirección predeterminada.");
+        await showAlert("Éxito", "Las cartas físicas serán enviadas a tu dirección predeterminada.");
       }
 
       setCards(prev => prev.map(c => {
-        if (c.isSelected && !c.status) {
+        if (validCardsToRedeem.find(vc => vc.id === c.id)) {
           return { ...c, isSelected: false, status: 'REDEEMED' };
         }
         return c;
@@ -218,9 +254,13 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
     );
 
     if (wantsToRedeem) {
+      const validCardsToRedeem = await simulateStockCheck(availableCards);
+      
+      if (validCardsToRedeem.length === 0) return;
+
       const useDefaultAddress = await showConfirm(
         "Dirección de Envío",
-        "¿Deseas enviar las cartas a la dirección agregada previamente?",
+        `¿Deseas enviar las ${validCardsToRedeem.length} cartas en stock a la dirección agregada previamente?`,
         "Usar Predeterminada",
         "Ingresar Nueva"
       );
@@ -231,12 +271,17 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
           await showAlert("Operación Cancelada", "Debes especificar una dirección. Se ha cancelado la operación.");
           return;
         }
-        await showAlert("Éxito", `Las cartas serán enviadas a: ${newAddress}`);
+        await showAlert("Éxito", `Las cartas físicas serán enviadas a: ${newAddress}`);
       } else {
-        await showAlert("Éxito", "Las cartas serán enviadas a tu dirección predeterminada.");
+        await showAlert("Éxito", "Las cartas físicas serán enviadas a tu dirección predeterminada.");
       }
 
-      setCards(prev => prev.map(c => !c.status ? { ...c, isSelected: false, status: 'REDEEMED' } : c));
+      setCards(prev => prev.map(c => {
+        if (validCardsToRedeem.find(vc => vc.id === c.id)) {
+           return { ...c, isSelected: false, status: 'REDEEMED' };
+        }
+        return c;
+      }));
     }
   };
 

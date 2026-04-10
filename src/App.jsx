@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Coins, Package, ChevronDown, User, Settings, LogOut } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { Coins, Package, ChevronDown, User, Settings, LogOut, X } from 'lucide-react';
 import PackOpener from './components/PackOpener';
 import Inventory from './components/Inventory';
 import './App.css';
@@ -9,6 +10,7 @@ function App() {
   const [appState, setAppState] = useState('store'); // 'store' | 'opening' | 'inventory'
   const [openedCards, setOpenedCards] = useState([]);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [creditAlert, setCreditAlert] = useState(false);
   
   const userProfile = {
     name: "Planeswalker",
@@ -30,7 +32,7 @@ function App() {
       setUserCredit(prev => prev - packPrice);
       setAppState('opening');
     } else {
-      alert("Insufficient store credit to purchase this pack.");
+      setCreditAlert(true);
     }
   };
 
@@ -108,6 +110,30 @@ function App() {
           />
         )}
       </main>
+
+      {creditAlert && createPortal(
+        <div className="tutorial-overlay" onClick={() => setCreditAlert(false)}>
+          <div className="tutorial-modal glass" onClick={(e) => e.stopPropagation()}>
+            <button className="close-modal-btn" onClick={() => setCreditAlert(false)} aria-label="Cerrar">
+              <X size={24} />
+            </button>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>⚠️ Saldo Insuficiente</h2>
+            <p style={{ marginBottom: '1.5rem', whiteSpace: 'pre-wrap', lineHeight: '1.5', color: 'var(--text-muted)' }}>
+              No cuentas con los créditos suficientes para adquirir este sobre ($3.99). Vende algunas de las cartas de tu colección para obtener crédito.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
+              <button 
+                className="buy-button" 
+                style={{ width: 'auto', padding: '0.75rem 2rem' }}
+                onClick={() => setCreditAlert(false)}
+              >
+                Entendido
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }
