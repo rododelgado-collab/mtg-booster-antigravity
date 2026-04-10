@@ -192,3 +192,21 @@
 .tutorial-list strong {
   color: var(--accent-blue);
 }
+
+/* Mobile Responsiveness for Inventory */
+@media (max-width: 768px) {
+  .inventory-header {
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    padding: 1rem;
+    top: 0;
+    background: var(--bg-darker) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .cards-grid {
+    padding: 0 1rem;
+  }
+}

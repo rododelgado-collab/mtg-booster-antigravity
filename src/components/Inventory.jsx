@@ -292,11 +292,11 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
       <div className="inventory-header">
         <button className="back-button glass" onClick={handleGoBack}>
           <ArrowLeft size={20} />
-          <span>Back to Store</span>
+          <span>Volver a la Tienda</span>
         </button>
 
         <div className="pack-summary glass">
-          <span className="summary-label">Total Pack Value: </span>
+          <span className="summary-label">Valor Total del Sobre: </span>
           <span className="summary-value text-gold">${totalPackValue.toFixed(2)}</span>
           <button 
             className="help-button" 
@@ -327,21 +327,21 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
       
       <div className="cards-grid">
         <div className="rarity-section">
-          <h3 className="rarity-title rare-title">Rare / Mythic</h3>
+          <h3 className="rarity-title rare-title">Raras / Míticas</h3>
           <div className="card-row">
             {rares.map(c => <CardDisplay key={c.id} card={c} onToggleSelect={toggleSelect} />)}
           </div>
         </div>
         
         <div className="rarity-section">
-          <h3 className="rarity-title uncommon-title">Uncommons</h3>
+          <h3 className="rarity-title uncommon-title">Infrecuentes</h3>
           <div className="card-row">
             {uncommons.map(c => <CardDisplay key={c.id} card={c} onToggleSelect={toggleSelect} />)}
           </div>
         </div>
 
         <div className="rarity-section">
-          <h3 className="rarity-title common-title">Commons & Tokens</h3>
+          <h3 className="rarity-title common-title">Comunes & Tokens</h3>
           <div className="card-row">
             {commons.concat(tokens).map(c => <CardDisplay key={c.id} card={c} onToggleSelect={toggleSelect} />)}
           </div>

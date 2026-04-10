@@ -54,18 +54,18 @@ const CardDisplay = ({ card, onToggleSelect }) => {
 
         {card.status === 'SOLD' && (
           <div className="status-badge sold-badge">
-            <Coins size={16} /> Sold
+            <Coins size={16} /> Vendida
           </div>
         )}
         {card.status === 'REDEEMED' && (
           <div className="status-badge redeemed-badge">
-            <Package size={16} /> Redeemed
+            <Package size={16} /> Canjeada
           </div>
         )}
       </div>
       
       <div className="card-actions glass">
-        <p className="card-price">CK Value: ${card.price.toFixed(2)}</p>
+        <p className="card-price">Valor: ${card.price.toFixed(2)}</p>
       </div>
     </div>
   );

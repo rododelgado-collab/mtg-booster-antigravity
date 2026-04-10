@@ -81,3 +81,10 @@ button {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
 }
+
+/* Mobile Responsiveness for Root */
+@media (max-width: 768px) {
+  #root {
+    padding: 0;
+  }
+}

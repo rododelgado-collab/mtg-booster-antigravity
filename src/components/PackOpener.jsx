@@ -5,16 +5,16 @@ import './PackOpener.css';
 
 const PackOpener = ({ onComplete }) => {
   const [opening, setOpening] = useState(false);
-  const [statusText, setStatusText] = useState('Click to tear open');
+  const [statusText, setStatusText] = useState('Haz clic para abrir el sobre');
 
   const handleOpen = async () => {
     if (opening) return;
     setOpening(true);
-    setStatusText('Channeling Mana...');
+    setStatusText('Canalizando Maná...');
 
     try {
       const pack = await generateBoosterPack();
-      setStatusText('Revealing Mythics...');
+      setStatusText('Revelando Míticas...');
       
       // Artificial delay for the suspense
       setTimeout(() => {
@@ -23,7 +23,7 @@ const PackOpener = ({ onComplete }) => {
 
     } catch (err) {
       console.error(err);
-      setStatusText('Fizzled! Try again.');
+      setStatusText('¡El hechizo falló! Intenta de nuevo.');
       setOpening(false);
     }
   };
@@ -41,7 +41,7 @@ const PackOpener = ({ onComplete }) => {
             <PackageOpen size={80} className="text-blue" />
           )}
           <h2 className="pack-title">Bloomburrow</h2>
-          <p className="pack-type">Digital Draft Booster</p>
+          <p className="pack-type">Sobre Digital de Draft</p>
         </div>
       </div>
       <h3 className={`status-text ${opening ? 'pulsing' : ''}`}>{statusText}</h3>
