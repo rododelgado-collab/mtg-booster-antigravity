@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Coins, Package, ChevronDown, User, Settings, LogOut, X } from 'lucide-react';
 import PackOpener from './components/PackOpener';
@@ -12,6 +12,22 @@ function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [creditAlert, setCreditAlert] = useState(false);
   const [purchaseConfirmAlert, setPurchaseConfirmAlert] = useState(false);
+  
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
   
   const userProfile = {
     name: "Planeswalker",
@@ -56,7 +72,7 @@ function App() {
             <span>${userCredit.toFixed(2)}</span>
           </div>
 
-          <div className="profile-menu-container">
+          <div className="profile-menu-container" ref={profileRef}>
             <div className="profile-trigger" onClick={() => setIsProfileOpen(!isProfileOpen)}>
               <img src={userProfile.avatar} alt="Profile" className="profile-avatar" />
               <ChevronDown size={16} className={`chevron-icon ${isProfileOpen ? 'open' : ''}`} />
