@@ -319,8 +319,8 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
 
         <div className="batch-actions">
           <button className="batch-btn retain-btn" onClick={redeemSelected}>Canjear Sel.</button>
-          <button className="batch-btn retain-btn" onClick={redeemAll}>Canjear Todo</button>
           <button className="batch-btn sell-btn" onClick={sellSelected}>Vender Sel.</button>
+          <button className="batch-btn retain-btn" onClick={redeemAll}>Canjear Todo</button>
           <button className="batch-btn sell-btn" onClick={sellAll}>Vender Todo</button>
         </div>
       </div>

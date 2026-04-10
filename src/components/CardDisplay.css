@@ -4,6 +4,7 @@
   align-items: center;
   gap: 1rem;
   width: 240px;
+  max-width: 100%;
 }
 
 .mtg-card {
@@ -110,4 +111,28 @@
   font-weight: 600;
   color: var(--text-main);
   font-size: 0.9rem;
+}
+
+/* Mobile Responsiveness for Cards */
+@media (max-width: 768px) {
+  .card-container {
+    width: min(200px, calc(50vw - 1.5rem));
+  }
+}
+
+@media (max-width: 480px) {
+  .card-container {
+    width: min(180px, calc(50vw - 1.25rem));
+  }
+
+  .status-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .card-container {
+    width: min(160px, calc(50vw - 1rem));
+  }
 }

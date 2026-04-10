@@ -7,8 +7,8 @@
 }
 
 .booster-pack {
-  width: 280px;
-  height: 400px;
+  width: min(280px, 80vw);
+  aspect-ratio: 7 / 10;
   border-radius: 16px;
   display: flex;
   align-items: center;
@@ -94,6 +94,8 @@
   font-size: 1.5rem;
   color: var(--text-muted);
   letter-spacing: 1px;
+  padding: 0 1rem;
+  text-align: center;
 }
 
 .pulsing {
@@ -104,4 +106,31 @@
 @keyframes textPulse {
   0% { opacity: 0.6; }
   100% { opacity: 1; text-shadow: 0 0 10px var(--text-main); }
+}
+
+/* Mobile Responsiveness for PackOpener */
+@media (max-width: 768px) {
+  .pack-opener-view {
+    min-height: 50vh;
+    padding: 1rem;
+  }
+
+  .pack-title {
+    font-size: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .status-text {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .pack-title {
+    font-size: 1.25rem;
+  }
+
+  .status-text {
+    font-size: 1rem;
+  }
 }

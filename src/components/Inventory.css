@@ -147,6 +147,8 @@
   position: relative;
   width: 90%;
   max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
   padding: 2.5rem;
   border-radius: 20px;
   text-align: left;
@@ -193,20 +195,86 @@
   color: var(--accent-blue);
 }
 
+@media (max-width: 768px) {
+  .tutorial-modal {
+    padding: 2rem 1.5rem;
+    border-radius: 16px;
+  }
+
+  .tutorial-modal h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .tutorial-list {
+    font-size: 0.95rem;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
 /* Mobile Responsiveness for Inventory */
 @media (max-width: 768px) {
   .inventory-header {
     border-radius: 0;
     border-left: none;
     border-right: none;
-    padding: 1rem;
-    top: 0;
+    padding: 0.75rem 1rem;
+    /* Stay below the sticky app header (~4rem tall on mobile) */
+    top: 4rem;
     background: var(--bg-darker) !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    gap: 0.5rem;
   }
+
+  .batch-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .batch-btn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    text-align: center;
+  }
+
+  .back-button span {
+    display: none;
+  }
+
+  .pack-summary {
+    font-size: 0.95rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .summary-value {
+    font-size: 1rem;
+  }
+
   .cards-grid {
-    padding: 0 1rem;
+    padding: 0 0.75rem;
+  }
+
+  .card-row {
+    justify-content: center;
+  }
+
+  .rarity-title {
+    font-size: 1.25rem;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 380px) {
+  .inventory-header {
+    top: 3.5rem;
+  }
+
+  .batch-btn {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.5rem;
   }
 }
