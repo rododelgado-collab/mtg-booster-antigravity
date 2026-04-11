@@ -179,6 +179,8 @@
   color: var(--accent-gold);
   margin-bottom: 1.5rem;
   font-size: 2rem;
+  /* Evita que el título se solape con el botón X */
+  padding-right: 2.5rem;
 }
 
 .tutorial-list {

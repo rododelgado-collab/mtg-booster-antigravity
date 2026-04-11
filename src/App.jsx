@@ -148,7 +148,7 @@ function App() {
             </button>
             <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>⚠️ Saldo Insuficiente</h2>
             <p style={{ marginBottom: '1.5rem', whiteSpace: 'pre-wrap', lineHeight: '1.5', color: 'var(--text-muted)' }}>
-              No cuentas con los créditos suficientes para adquirir este sobre ($3.99). Vende algunas de las cartas de tu colección para obtener crédito.
+              No cuentas con saldo suficiente para adquirir este sobre ($3.99). Agrega saldo a tu cuenta.
             </p>
             <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
               <button 

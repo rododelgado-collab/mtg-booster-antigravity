@@ -101,7 +101,7 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
     if (unhandledCards.length > 0) {
       await showAlert(
         "Acción Requerida", 
-        `Aún tienes ${unhandledCards.length} carta(s) pendientes. Por favor, Vende o Canjea todas tus cartas antes de abandonar este sobre.`
+        `Aún tienes ${unhandledCards.length} carta(s) pendientes. Por favor, vende o canjea todas tus cartas antes de abandonar este sobre.`
       );
       return;
     }
