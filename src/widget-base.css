@@ -1,0 +1,39 @@
+/*
+  widget-base.css
+  Estilos base para el widget embebido en sitios externos.
+  Solo define variables CSS y utilidades — no toca body, html ni *,
+  para no interferir con los estilos del sitio anfitrión.
+*/
+
+:root {
+  --bg-dark: #0f172a;
+  --bg-darker: #020617;
+  --bg-card: rgba(30, 41, 59, 0.7);
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+
+  --accent-gold: #fbbf24;
+  --accent-blue: #3b82f6;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+
+  --rarity-common: #cbd5e1;
+  --rarity-uncommon: #93c5fd;
+  --rarity-rare: #fcd34d;
+  --rarity-mythic: #f97316;
+  --rarity-token: #a8a29e;
+
+  --font-main: 'Outfit', sans-serif;
+  --font-magic: 'Cinzel', serif;
+
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.glass {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}

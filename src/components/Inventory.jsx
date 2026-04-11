@@ -19,6 +19,7 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
 
   // Custom Async Dialog State
   const [modalConfig, setModalConfig] = useState(null);
+  const [promptValue, setPromptValue] = useState('');
 
   const showConfirm = (title, message, confirmText = "Aceptar", cancelText = "Cancelar") => {
     return new Promise((resolve) => {
@@ -36,6 +37,7 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
 
   const showPrompt = (title, message) => {
     return new Promise((resolve) => {
+      setPromptValue('');
       setModalConfig({
         type: 'prompt',
         title,
@@ -378,44 +380,42 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
             <p style={{ marginBottom: '1.5rem', whiteSpace: 'pre-wrap', lineHeight: '1.5', color: 'var(--text-muted)' }}>{modalConfig.message}</p>
             
             {modalConfig.type === 'prompt' && (
-              <input 
-                type="text" 
-                id="prompt-input"
-                style={{ 
-                  width: '100%', 
-                  padding: '1rem', 
-                  borderRadius: '8px', 
-                  border: '1px solid rgba(255,255,255,0.2)', 
-                  background: 'rgba(0,0,0,0.3)', 
-                  color: 'white', 
+              <input
+                type="text"
+                value={promptValue}
+                onChange={(e) => setPromptValue(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '1rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(0,0,0,0.3)',
+                  color: 'white',
                   marginBottom: '1.5rem',
                   fontSize: '1rem',
                   fontFamily: 'inherit'
-                }} 
+                }}
                 autoFocus
                 onKeyDown={(e) => {
-                  if(e.key === 'Enter') {
-                    modalConfig.onConfirm(e.target.value);
-                  }
+                  if (e.key === 'Enter') modalConfig.onConfirm(promptValue);
                 }}
               />
             )}
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
               {modalConfig.type !== 'alert' && (
-                <button 
-                  className="batch-btn retain-btn" 
+                <button
+                  className="batch-btn retain-btn"
                   onClick={modalConfig.onCancel}
                 >
                   {modalConfig.cancelText}
                 </button>
               )}
-              <button 
-                className="batch-btn sell-btn" 
+              <button
+                className="batch-btn sell-btn"
                 onClick={() => {
                   if (modalConfig.type === 'prompt') {
-                    const val = document.getElementById('prompt-input')?.value;
-                    modalConfig.onConfirm(val);
+                    modalConfig.onConfirm(promptValue);
                   } else {
                     modalConfig.onConfirm();
                   }

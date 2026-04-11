@@ -113,6 +113,22 @@
   font-size: 0.9rem;
 }
 
+.card-image-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: var(--text-muted);
+  padding: 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
 /* Mobile Responsiveness for Cards */
 @media (max-width: 768px) {
   .card-container {

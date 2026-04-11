@@ -215,6 +215,24 @@
   }
 }
 
+/* Tablet: evitar overflow del inventory-header */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .inventory-header {
+    gap: 0.75rem;
+  }
+
+  .batch-btn {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.85rem;
+  }
+
+  .batch-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 0.4rem;
+  }
+}
+
 /* Mobile Responsiveness for Inventory */
 @media (max-width: 768px) {
   .inventory-header {
