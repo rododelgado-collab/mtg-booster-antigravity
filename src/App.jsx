@@ -1,19 +1,56 @@
-import { useState, useRef, useEffect } from 'react';
-import { createPortal } from 'react-dom';
+import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
 import { Coins, Package, ChevronDown, User, Settings, LogOut, X } from 'lucide-react';
 import PackOpener from './components/PackOpener';
-import Inventory from './components/Inventory';
 import './App.css';
 
+// Inventory cargado de forma diferida para no incluirlo en el bundle inicial
+const Inventory = lazy(() => import('./components/Inventory'));
+
+const PACK_PRICE = 3.99;
+const SESSION_VERSION = '1';
+
+const USER_PROFILE = {
+  name: 'Planeswalker',
+  avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Jace',
+};
+
 function App() {
-  const [userCredit, setUserCredit] = useState(5.0);
-  const [appState, setAppState] = useState('store'); // 'store' | 'opening' | 'inventory'
-  const [openedCards, setOpenedCards] = useState([]);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [creditAlert, setCreditAlert] = useState(false);
+  const [userCredit, setUserCredit] = useState(() => {
+    if (sessionStorage.getItem('mtg_version') !== SESSION_VERSION) {
+      sessionStorage.clear();
+      sessionStorage.setItem('mtg_version', SESSION_VERSION);
+      return 5.0;
+    }
+    const saved = sessionStorage.getItem('mtg_credit');
+    return saved !== null ? parseFloat(saved) : 5.0;
+  });
+
+  const [appState, setAppState] = useState(() => {
+    const saved = sessionStorage.getItem('mtg_appState');
+    return saved === 'inventory' ? 'inventory' : 'store';
+  });
+
+  const [openedCards, setOpenedCards] = useState(() => {
+    if (sessionStorage.getItem('mtg_appState') === 'inventory') {
+      try {
+        const saved = sessionStorage.getItem('mtg_cards');
+        return saved ? JSON.parse(saved) : [];
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
+  const [isProfileOpen, setIsProfileOpen]           = useState(false);
+  const [creditAlert, setCreditAlert]               = useState(false);
   const [purchaseConfirmAlert, setPurchaseConfirmAlert] = useState(false);
-  
+  const [avatarError, setAvatarError]               = useState(false);
+
   const profileRef = useRef(null);
+
+  useEffect(() => { sessionStorage.setItem('mtg_appState', appState); }, [appState]);
+  useEffect(() => { sessionStorage.setItem('mtg_credit', userCredit.toString()); }, [userCredit]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -28,39 +65,41 @@ function App() {
       document.removeEventListener('touchstart', handleClickOutside);
     };
   }, []);
-  
-  const userProfile = {
-    name: "Planeswalker",
-    avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=Jace"
-  };
 
-  const handlePackOpened = (cards) => {
+  const handlePackOpened = useCallback((cards) => {
     setOpenedCards(cards);
     setAppState('inventory');
-  };
+  }, []);
 
-  const handleAddCredit = (amount) => {
+  const handleAddCredit = useCallback((amount) => {
     setUserCredit(prev => prev + amount);
-  };
+  }, []);
 
-  const handleBuyPackClick = () => {
-    const packPrice = 3.99;
-    if (userCredit >= packPrice) {
+  const handleGoBackToStore = useCallback(() => {
+    sessionStorage.removeItem('mtg_cards');
+    setAppState('store');
+  }, []);
+
+  const handleBuyPackClick = useCallback(() => {
+    if (userCredit >= PACK_PRICE) {
       setPurchaseConfirmAlert(true);
     } else {
       setCreditAlert(true);
     }
-  };
+  }, [userCredit]);
 
-  const confirmPurchase = () => {
-    const packPrice = 3.99;
+  const confirmPurchase = useCallback(() => {
     setPurchaseConfirmAlert(false);
-    setUserCredit(prev => prev - packPrice);
+    setUserCredit(prev => prev - PACK_PRICE);
     setAppState('opening');
-  };
+  }, []);
 
   return (
     <div className="app-container">
+      <span className="sr-only" aria-live="polite" aria-atomic="true">
+        Saldo disponible: ${userCredit.toFixed(2)}
+      </span>
+
       <header className="glass">
         <div className="logo">
           <span className="logo-icon">🎴</span>
@@ -69,26 +108,43 @@ function App() {
         <div className="user-stats">
           <div className="stat">
             <Coins size={20} className="text-gold" />
-            <span>${userCredit.toFixed(2)}</span>
+            <span aria-hidden="true">${userCredit.toFixed(2)}</span>
           </div>
 
           <div className="profile-menu-container" ref={profileRef}>
-            <div className="profile-trigger" onClick={() => setIsProfileOpen(!isProfileOpen)}>
-              <img src={userProfile.avatar} alt="Profile" className="profile-avatar" />
+            <button
+              className="profile-trigger"
+              onClick={() => setIsProfileOpen(!isProfileOpen)}
+              aria-label="Menú de perfil"
+              aria-expanded={isProfileOpen}
+              type="button"
+            >
+              {avatarError ? (
+                <div className="profile-avatar profile-avatar-fallback">
+                  <User size={20} />
+                </div>
+              ) : (
+                <img
+                  src={USER_PROFILE.avatar}
+                  alt="Avatar de perfil"
+                  className="profile-avatar"
+                  onError={() => setAvatarError(true)}
+                />
+              )}
               <ChevronDown size={16} className={`chevron-icon ${isProfileOpen ? 'open' : ''}`} />
-            </div>
-            
+            </button>
+
             {isProfileOpen && (
               <div className="profile-dropdown glass">
                 <div className="dropdown-header">
-                  <strong>{userProfile.name}</strong>
+                  <strong>{USER_PROFILE.name}</strong>
                   <span className="dropdown-email">usuario@magicthegathering.com</span>
                 </div>
                 <hr className="dropdown-divider" />
                 <ul className="dropdown-list">
-                  <li><User size={16} /> Mi Cuenta</li>
-                  <li><Settings size={16} /> Configuración</li>
-                  <li className="logout-item"><LogOut size={16} /> Cerrar Sesión</li>
+                  <li><button type="button" className="dropdown-item"><User size={16} /> Mi Cuenta</button></li>
+                  <li><button type="button" className="dropdown-item"><Settings size={16} /> Configuración</button></li>
+                  <li><button type="button" className="dropdown-item logout-item"><LogOut size={16} /> Cerrar Sesión</button></li>
                 </ul>
               </div>
             )}
@@ -96,30 +152,27 @@ function App() {
         </div>
       </header>
 
-      <main className="main-content">
+      <main>
         {appState === 'store' && (
           <div className="store-view">
             <h2>Sobres Digitales</h2>
-            <p className="subtitle">Abre un sobre y canjea o intercambia tus cartas por saldo al instante.</p>
-            
+            <p className="subtitle">Abre sobres digitales de Magic: The Gathering, canjea tus cartas físicas para su envio o véndelas por saldo al instante.</p>
+
             <div className="product-card glass">
-              <div className="product-info-top" style={{ textAlign: 'center' }}>
-                <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Sobre Digital de Bloomburrow</h3>
-                <div className="price-tag" style={{ margin: '0.5rem 0' }}>$3.99</div>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+              <div className="product-info-top">
+                <h3 className="product-title">Sobre Digital de Bloomburrow</h3>
+                <div className="price-tag">${PACK_PRICE.toFixed(2)}</div>
+                <p className="product-desc">
                   16 Cartas: 10 Comunes, 4 Infrecuentes, 1 Rara/Mítica, 1 Token
                 </p>
               </div>
 
-              <div className="product-image" style={{ marginBottom: '1.5rem' }}>
+              <div className="product-image">
                 <Package size={80} className="text-blue" />
               </div>
 
               <div className="product-actions">
-                <button 
-                  className="buy-button"
-                  onClick={handleBuyPackClick}
-                >
+                <button className="buy-button" onClick={handleBuyPackClick}>
                   Comprar y Abrir Ahora
                 </button>
               </div>
@@ -128,69 +181,59 @@ function App() {
         )}
 
         {appState === 'opening' && (
-          <PackOpener onComplete={handlePackOpened} />
+          <PackOpener onComplete={handlePackOpened} onBack={handleGoBackToStore} />
         )}
 
         {appState === 'inventory' && (
-          <Inventory 
-            cards={openedCards} 
-            onGoBack={() => setAppState('store')}
-            onAddCredit={handleAddCredit}
-          />
+          <Suspense fallback={<div className="loading-spinner" aria-label="Cargando inventario..." role="status" />}>
+            <Inventory
+              cards={openedCards}
+              onGoBack={handleGoBackToStore}
+              onAddCredit={handleAddCredit}
+            />
+          </Suspense>
         )}
       </main>
 
-      {creditAlert && createPortal(
-        <div className="tutorial-overlay" onClick={() => setCreditAlert(false)}>
-          <div className="tutorial-modal glass" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => setCreditAlert(false)} aria-label="Cerrar">
+      {creditAlert && (
+        <div className="app-modal-overlay" onClick={() => setCreditAlert(false)}>
+          <div className="app-modal glass" onClick={(e) => e.stopPropagation()}>
+            <button className="app-modal-close" onClick={() => setCreditAlert(false)} aria-label="Cerrar">
               <X size={24} />
             </button>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>⚠️ Saldo Insuficiente</h2>
-            <p style={{ marginBottom: '1.5rem', whiteSpace: 'pre-wrap', lineHeight: '1.5', color: 'var(--text-muted)' }}>
-              No cuentas con saldo suficiente para adquirir este sobre ($3.99). Agrega saldo a tu cuenta.
+            <h2 className="app-modal-title">⚠️ Saldo Insuficiente</h2>
+            <p className="app-modal-body">
+              No cuentas con saldo suficiente para adquirir este sobre (${PACK_PRICE.toFixed(2)}). Agrega saldo a tu cuenta.
             </p>
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1rem' }}>
-              <button 
-                className="buy-button" 
-                style={{ width: 'auto', padding: '0.75rem 2rem' }}
-                onClick={() => setCreditAlert(false)}
-              >
+            <div className="app-modal-actions">
+              <button className="buy-button app-modal-btn" onClick={() => setCreditAlert(false)}>
                 Entendido
               </button>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
 
-      {purchaseConfirmAlert && createPortal(
-        <div className="tutorial-overlay" onClick={() => setPurchaseConfirmAlert(false)}>
-          <div className="tutorial-modal glass" onClick={(e) => e.stopPropagation()}>
-            <button className="close-modal-btn" onClick={() => setPurchaseConfirmAlert(false)} aria-label="Cancelar">
+      {purchaseConfirmAlert && (
+        <div className="app-modal-overlay" onClick={() => setPurchaseConfirmAlert(false)}>
+          <div className="app-modal glass" onClick={(e) => e.stopPropagation()}>
+            <button className="app-modal-close" onClick={() => setPurchaseConfirmAlert(false)} aria-label="Cerrar">
               <X size={24} />
             </button>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem', color: 'var(--text-main)' }}>🛒 Confirmar Compra</h2>
-            <p style={{ marginBottom: '1.5rem', whiteSpace: 'pre-wrap', lineHeight: '1.5', color: 'var(--text-muted)' }}>
-              ¿Estás seguro de que deseas gastar $3.99 de tu saldo para abrir este Sobre Digital de Bloomburrow?
+            <h2 className="app-modal-title">🛒 Confirmar Compra</h2>
+            <p className="app-modal-body">
+              ¿Estás seguro de que deseas gastar ${PACK_PRICE.toFixed(2)} de tu saldo para abrir este Sobre Digital de Bloomburrow?
             </p>
-            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end', marginTop: '1rem' }}>
-              <button 
-                className="batch-btn retain-btn" 
-                onClick={() => setPurchaseConfirmAlert(false)}
-              >
+            <div className="app-modal-actions">
+              <button className="app-modal-cancel-btn" onClick={() => setPurchaseConfirmAlert(false)}>
                 Cancelar
               </button>
-              <button 
-                className="batch-btn sell-btn" 
-                onClick={confirmPurchase}
-              >
+              <button className="buy-button app-modal-btn" onClick={confirmPurchase}>
                 Comprar
               </button>
             </div>
           </div>
-        </div>,
-        document.body
+        </div>
       )}
     </div>
   );

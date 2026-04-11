@@ -7,6 +7,16 @@
   max-width: 100%;
 }
 
+/* La animación solo aplica a cartas sin procesar para evitar que se reproduzca al cambiar su estado */
+.card-container--animate {
+  animation: cardFadeIn 0.4s ease-out calc(var(--card-index, 0) * 60ms) both;
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 .mtg-card {
   width: 100%;
   aspect-ratio: 2.5 / 3.5;
@@ -98,19 +108,34 @@
   border: 1px solid var(--accent-blue);
 }
 
-.card-actions {
+.card-info {
   width: 100%;
-  padding: 0.75rem;
-  border-radius: 12px;
-  display: flex;
-  justify-content: center;
-  text-align: center;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.card-name {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+  justify-self: start;
+  min-width: 0;
 }
 
 .card-price {
-  font-weight: 600;
-  color: var(--text-main);
-  font-size: 0.9rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--accent-gold);
+  text-align: center;
+  justify-self: center;
 }
 
 .card-image-fallback {
@@ -151,4 +176,22 @@
   .card-container {
     width: min(160px, calc(50vw - 1rem));
   }
+}
+
+/* Zoom button inside card-info */
+.zoom-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0.2rem;
+  border-radius: 4px;
+  transition: var(--transition);
+  justify-self: end;
+}
+
+.zoom-btn:hover {
+  color: var(--accent-blue);
 }

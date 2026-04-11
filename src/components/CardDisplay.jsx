@@ -1,16 +1,23 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, memo } from 'react';
+import PropTypes from 'prop-types';
 import './CardDisplay.css';
-import { Check, Coins, Package, ImageOff } from 'lucide-react';
+import { Check, Coins, Package, ImageOff, ZoomIn } from 'lucide-react';
 
-const CardDisplay = ({ card, onToggleSelect }) => {
+// Dimensiones reales de las imágenes de Scryfall (tamaño "normal")
+const IMG_WIDTH = 488;
+const IMG_HEIGHT = 680;
+
+const CardDisplay = ({ card, onToggleSelect, index = 0, onZoom }) => {
   const [tiltStyle, setTiltStyle] = useState({});
   const [imgError, setImgError] = useState(false);
   const cardRef = useRef(null);
   const rafRef = useRef(null);
 
+  const isProcessed = card.status === 'SOLD' || card.status === 'REDEEMED';
+
   const handleMouseMove = (e) => {
     if (!cardRef.current) return;
-    // Capturar rect antes del RAF, en el momento exacto del evento
+    // Capturar rect en el momento del evento, antes del RAF
     const rect = cardRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -23,17 +30,15 @@ const CardDisplay = ({ card, onToggleSelect }) => {
       const rotateY = ((x - centerX) / centerX) * 15;
       setTiltStyle({
         transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.05, 1.05, 1.05)`,
-        transition: 'none'
+        transition: 'none',
       });
     });
   };
 
   const handleMouseLeave = () => {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    setTiltStyle({
-      transform: `perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)`,
-      transition: 'transform 0.5s ease'
-    });
+    // Limpiar el estilo inline para que el CSS de la clase (p.ej. .selected) tome el control
+    setTiltStyle({});
   };
 
   const handleTouchStart = () => {
@@ -42,13 +47,30 @@ const CardDisplay = ({ card, onToggleSelect }) => {
   };
 
   const handleTouchEnd = () => {
-    setTiltStyle({ transform: 'scale(1)', transition: 'transform 0.3s ease' });
+    // Limpiar estilo inline igual que en handleMouseLeave para no sobreescribir .selected
+    setTiltStyle({});
   };
 
-  const isProcessed = card.status === 'SOLD' || card.status === 'REDEEMED';
-
   return (
-    <div className="card-container">
+    <div
+      className={`card-container ${!card.status ? 'card-container--animate' : ''}`}
+      style={{ '--card-index': index }}
+    >
+      <div className="card-info glass">
+        <p className="card-name">{card.name}</p>
+        <p className="card-price">${card.price.toFixed(2)}</p>
+        {onZoom && (
+          <button
+            className="zoom-btn"
+            type="button"
+            aria-label={`Ver ${card.name} a tamaño completo`}
+            onClick={(e) => { e.stopPropagation(); onZoom(); }}
+          >
+            <ZoomIn size={14} />
+          </button>
+        )}
+      </div>
+
       <div
         className={`mtg-card ${card.isSelected ? 'selected' : ''} ${isProcessed ? 'processed' : ''}`}
         ref={cardRef}
@@ -79,6 +101,8 @@ const CardDisplay = ({ card, onToggleSelect }) => {
             src={card.image}
             alt={card.name}
             className="card-image"
+            width={IMG_WIDTH}
+            height={IMG_HEIGHT}
             loading="lazy"
             onError={() => setImgError(true)}
           />
@@ -103,11 +127,23 @@ const CardDisplay = ({ card, onToggleSelect }) => {
         )}
       </div>
 
-      <div className="card-actions glass">
-        <p className="card-price">Valor: ${card.price.toFixed(2)}</p>
-      </div>
     </div>
   );
 };
 
-export default CardDisplay;
+CardDisplay.propTypes = {
+  card: PropTypes.shape({
+    id: PropTypes.string.isRequired,
+    name: PropTypes.string.isRequired,
+    image: PropTypes.string.isRequired,
+    price: PropTypes.number.isRequired,
+    rarity: PropTypes.string.isRequired,
+    isSelected: PropTypes.bool,
+    status: PropTypes.oneOf([null, 'SOLD', 'REDEEMED']),
+  }).isRequired,
+  onToggleSelect: PropTypes.func.isRequired,
+  index: PropTypes.number,
+  onZoom: PropTypes.func,
+};
+
+export default memo(CardDisplay);

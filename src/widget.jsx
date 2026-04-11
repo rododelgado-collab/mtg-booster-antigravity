@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App.jsx';
+import ErrorBoundary from './components/ErrorBoundary.jsx';
 // Importa solo variables CSS y .glass, sin resets globales de body/html/*
 // para no interferir con los estilos del sitio anfitrión.
 import './widget-base.css';
@@ -11,7 +12,9 @@ window.mountMythicBoosterWidget = (elementId) => {
   if (container) {
     ReactDOM.createRoot(container).render(
       <React.StrictMode>
-        <App />
+        <ErrorBoundary>
+          <App />
+        </ErrorBoundary>
       </React.StrictMode>
     );
   } else {

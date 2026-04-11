@@ -108,6 +108,26 @@
   100% { opacity: 1; text-shadow: 0 0 10px var(--text-main); }
 }
 
+.pack-back-btn {
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text-main);
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 1rem;
+  font-family: var(--font-main);
+}
+
+.pack-back-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
 /* Mobile Responsiveness for PackOpener */
 @media (max-width: 768px) {
   .pack-opener-view {
