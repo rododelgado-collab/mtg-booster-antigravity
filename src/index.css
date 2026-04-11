@@ -33,6 +33,11 @@
   padding: 0;
 }
 
+html {
+  /* overflow-x aquí no crea un scroll container, así no rompe position: sticky/fixed */
+  overflow-x: hidden;
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -41,7 +46,13 @@ body {
   background: radial-gradient(circle at top right, #1e293b, var(--bg-darker));
   color: var(--text-main);
   background-attachment: fixed;
-  overflow-x: hidden;
+}
+
+@media (max-width: 768px) {
+  body {
+    /* background-attachment: fixed no funciona en iOS Safari y muestra fondo blanco al hacer scroll */
+    background-attachment: scroll;
+  }
 }
 
 button {
