@@ -1,10 +1,8 @@
-import { useState, useRef, useEffect, useCallback, lazy, Suspense } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Coins, Package, ChevronDown, User, Settings, LogOut, X } from 'lucide-react';
 import PackOpener from './components/PackOpener';
+import Inventory from './components/Inventory';
 import './App.css';
-
-// Inventory cargado de forma diferida para no incluirlo en el bundle inicial
-const Inventory = lazy(() => import('./components/Inventory'));
 
 const PACK_PRICE = 3.99;
 const SESSION_VERSION = '1';
@@ -16,28 +14,42 @@ const USER_PROFILE = {
 
 function App() {
   const [userCredit, setUserCredit] = useState(() => {
-    if (sessionStorage.getItem('mtg_version') !== SESSION_VERSION) {
-      sessionStorage.clear();
-      sessionStorage.setItem('mtg_version', SESSION_VERSION);
+    try {
+      if (sessionStorage.getItem('mtg_version') !== SESSION_VERSION) {
+        sessionStorage.clear();
+        sessionStorage.setItem('mtg_version', SESSION_VERSION);
+        return 5.0;
+      }
+      const saved = sessionStorage.getItem('mtg_credit');
+      return saved !== null ? parseFloat(saved) : 5.0;
+    } catch (e) {
+      console.warn("No se pudo acceder a sessionStorage", e);
       return 5.0;
     }
-    const saved = sessionStorage.getItem('mtg_credit');
-    return saved !== null ? parseFloat(saved) : 5.0;
   });
 
   const [appState, setAppState] = useState(() => {
-    const saved = sessionStorage.getItem('mtg_appState');
-    return saved === 'inventory' ? 'inventory' : 'store';
+    try {
+      const saved = sessionStorage.getItem('mtg_appState');
+      return saved === 'inventory' ? 'inventory' : 'store';
+    } catch {
+      return 'store';
+    }
   });
 
   const [openedCards, setOpenedCards] = useState(() => {
-    if (sessionStorage.getItem('mtg_appState') === 'inventory') {
-      try {
-        const saved = sessionStorage.getItem('mtg_cards');
-        return saved ? JSON.parse(saved) : [];
-      } catch {
-        return [];
+    try {
+      if (sessionStorage.getItem('mtg_appState') === 'inventory') {
+        try {
+          const saved = sessionStorage.getItem('mtg_cards');
+          const parsed = saved ? JSON.parse(saved) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
       }
+    } catch {
+      return [];
     }
     return [];
   });
@@ -49,8 +61,12 @@ function App() {
 
   const profileRef = useRef(null);
 
-  useEffect(() => { sessionStorage.setItem('mtg_appState', appState); }, [appState]);
-  useEffect(() => { sessionStorage.setItem('mtg_credit', userCredit.toString()); }, [userCredit]);
+  useEffect(() => { 
+    try { sessionStorage.setItem('mtg_appState', appState); } catch(e) {} 
+  }, [appState]);
+  useEffect(() => { 
+    try { sessionStorage.setItem('mtg_credit', userCredit.toString()); } catch(e) {} 
+  }, [userCredit]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -76,7 +92,11 @@ function App() {
   }, []);
 
   const handleGoBackToStore = useCallback(() => {
-    sessionStorage.removeItem('mtg_cards');
+    try {
+      sessionStorage.removeItem('mtg_cards');
+    } catch (e) {
+      console.warn(e);
+    }
     setAppState('store');
   }, []);
 
@@ -185,13 +205,11 @@ function App() {
         )}
 
         {appState === 'inventory' && (
-          <Suspense fallback={<div className="loading-spinner" aria-label="Cargando inventario..." role="status" />}>
-            <Inventory
-              cards={openedCards}
-              onGoBack={handleGoBackToStore}
-              onAddCredit={handleAddCredit}
-            />
-          </Suspense>
+          <Inventory
+            cards={openedCards}
+            onGoBack={handleGoBackToStore}
+            onAddCredit={handleAddCredit}
+          />
         )}
       </main>
 

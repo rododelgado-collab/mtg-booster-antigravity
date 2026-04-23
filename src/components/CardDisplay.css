@@ -158,6 +158,40 @@
 @media (max-width: 768px) {
   .card-container {
     width: min(200px, calc(50vw - 1.5rem));
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    row-gap: 0.4rem;
+    column-gap: 0.25rem;
+    align-items: center;
+  }
+
+  .card-info {
+    display: contents;
+  }
+
+  .mtg-card {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .card-name {
+    grid-column: 1;
+    grid-row: 1;
+    padding-left: 0.25rem;
+  }
+
+  .zoom-btn {
+    grid-column: 2;
+    grid-row: 1;
+    padding-right: 0.25rem;
+  }
+
+  .card-price {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: center;
+    padding-bottom: 0.25rem;
   }
 }
 

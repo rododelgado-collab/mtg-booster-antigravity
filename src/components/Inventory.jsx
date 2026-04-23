@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import PropTypes from 'prop-types';
 import CardDisplay from './CardDisplay';
-import { ArrowLeft, X, HelpCircle } from 'lucide-react';
+import { X, HelpCircle } from 'lucide-react';
 import './Inventory.css';
 
 const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
@@ -14,12 +14,20 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
 
   // Tutorial
   const [showTutorial, setShowTutorial] = useState(() => {
-    return localStorage.getItem('hasSeenInventoryTutorial') !== 'true';
+    try {
+      return localStorage.getItem('hasSeenInventoryTutorial') !== 'true';
+    } catch (e) {
+      return true;
+    }
   });
 
   const dismissTutorial = () => {
     setShowTutorial(false);
-    localStorage.setItem('hasSeenInventoryTutorial', 'true');
+    try {
+      localStorage.setItem('hasSeenInventoryTutorial', 'true');
+    } catch (e) {
+      console.warn("No se pudo acceder a localStorage", e);
+    }
   };
 
   // Zoom de carta
@@ -29,16 +37,16 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
   const [modalConfig, setModalConfig] = useState(null);
   const [promptValue, setPromptValue] = useState('');
 
-  const showConfirm = (title, message, confirmText = 'Aceptar', cancelText = 'Cancelar') =>
+  const showConfirm = useCallback((title, message, confirmText = 'Aceptar', cancelText = 'Cancelar') =>
     new Promise((resolve) => {
       setModalConfig({
         type: 'confirm', title, message, confirmText, cancelText,
         onConfirm: () => { setModalConfig(null); resolve(true); },
         onCancel:  () => { setModalConfig(null); resolve(false); },
       });
-    });
+    }), []);
 
-  const showPrompt = (title, message) =>
+  const showPrompt = useCallback((title, message) =>
     new Promise((resolve) => {
       setPromptValue('');
       setModalConfig({
@@ -47,16 +55,16 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
         onConfirm: (val) => { setModalConfig(null); resolve(val); },
         onCancel:  () => { setModalConfig(null); resolve(null); },
       });
-    });
+    }), []);
 
-  const showAlert = (title, message) =>
+  const showAlert = useCallback((title, message) =>
     new Promise((resolve) => {
       setModalConfig({
         type: 'alert', title, message, confirmText: 'Entendido',
         onConfirm: () => { setModalConfig(null); resolve(); },
         onCancel:  () => { setModalConfig(null); resolve(); },
       });
-    });
+    }), []);
 
   useEffect(() => {
     const allProcessed = cards.length > 0 && cards.every(c => c.status !== null);
@@ -79,10 +87,14 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
     }, 300);
 
     return () => clearTimeout(timer);
-  }, [cards, onGoBack]);
+  }, [cards, onGoBack, showAlert]);
 
   useEffect(() => {
-    sessionStorage.setItem('mtg_cards', JSON.stringify(cards));
+    try {
+      sessionStorage.setItem('mtg_cards', JSON.stringify(cards));
+    } catch (e) {
+      console.warn("No se pudo guardar en sessionStorage", e);
+    }
   }, [cards]);
 
   useEffect(() => {
@@ -95,18 +107,6 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [cards]);
-
-  const handleGoBack = async () => {
-    const unhandledCards = cards.filter(c => !c.status);
-    if (unhandledCards.length > 0) {
-      await showAlert(
-        'Acción Requerida',
-        `Aún tienes ${unhandledCards.length} carta(s) pendientes. Por favor, vende o canjea todas tus cartas antes de abandonar este sobre.`
-      );
-      return;
-    }
-    onGoBack();
-  };
 
   // Agrupación por rareza
   const commons   = useMemo(() => cards.filter(c => c.rarity === 'common'), [cards]);
@@ -234,11 +234,6 @@ const Inventory = ({ cards: initialCards, onGoBack, onAddCredit }) => {
   return (
     <div className="inventory-view">
       <div className="inventory-header">
-        <button className="back-button glass" onClick={handleGoBack}>
-          <ArrowLeft size={20} />
-          <span>Volver a la Tienda</span>
-        </button>
-
         <div className="pack-summary glass">
           <span className="summary-label">Valor del Sobre: </span>
           <span className="summary-value text-gold">${totalPackValue.toFixed(2)}</span>

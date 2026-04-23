@@ -13,8 +13,12 @@ const PACK_COMPOSITION = {
 };
 
 let setCardsCache = null;
+let fetchPromise = null;
 
-export const resetCache = () => { setCardsCache = null; };
+export const resetCache = () => { 
+  setCardsCache = null; 
+  fetchPromise = null;
+};
 
 // Extrae la imagen correcta considerando cartas de doble cara
 export const getCardImage = (card) =>
@@ -38,22 +42,31 @@ export const getRandom = (arr, count) => {
 
 export const fetchSetCards = async () => {
   if (setCardsCache) return setCardsCache;
+  if (fetchPromise) return fetchPromise;
 
-  let allCards = [];
-  let nextUrl = `${API_URL}/cards/search?q=set:${SET_CODE}+-type:basic`;
+  fetchPromise = (async () => {
+    let allCards = [];
+    let nextUrl = `${API_URL}/cards/search?q=set:${SET_CODE}+-type:basic`;
 
-  while (nextUrl) {
-    const response = await fetch(nextUrl);
-    if (!response.ok) {
-      throw new Error(`Error al contactar Scryfall: ${response.status} ${response.statusText}`);
+    while (nextUrl) {
+      const response = await fetch(nextUrl);
+      if (!response.ok) {
+        fetchPromise = null;
+        throw new Error(`Error al contactar Scryfall: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      allCards = allCards.concat(data.data);
+      nextUrl = data.has_more ? data.next_page : null;
+      
+      // Respetar el rate limit recomendado por Scryfall (50-100ms)
+      if (nextUrl) await new Promise(resolve => setTimeout(resolve, 100));
     }
-    const data = await response.json();
-    allCards = allCards.concat(data.data);
-    nextUrl = data.has_more ? data.next_page : null;
-  }
 
-  setCardsCache = allCards;
-  return setCardsCache;
+    setCardsCache = allCards;
+    return allCards;
+  })();
+  
+  return fetchPromise;
 };
 
 export const generateBoosterPack = async () => {
@@ -96,8 +109,17 @@ export const generateBoosterPack = async () => {
     throw new Error('No se pudo generar el sobre: cartas insuficientes en el set.');
   }
 
+  const generateSafeId = () => {
+    try {
+      if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+      }
+    } catch (e) {}
+    return Math.random().toString(36).substring(2, 15);
+  };
+
   return pack.sort(() => Math.random() - 0.5).map(c => ({
-    id: crypto.randomUUID(),
+    id: generateSafeId(),
     name: c.name,
     rarity: c.rarity,
     type_line: c.type_line,

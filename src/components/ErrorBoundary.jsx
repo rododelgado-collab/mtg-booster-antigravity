@@ -16,7 +16,11 @@ class ErrorBoundary extends Component {
   }
 
   handleReload = () => {
-    sessionStorage.clear();
+    try {
+      sessionStorage.clear();
+    } catch (e) {
+      console.warn("No se pudo limpiar sessionStorage", e);
+    }
     window.location.reload();
   };
 
